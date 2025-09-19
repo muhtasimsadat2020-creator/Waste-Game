@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>শান্তি প্রতিষ্ঠার খেলা - বর্জ্য ব্যবস্থাপনা</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Kalpurush', 'Solaimanlipi', 'Nikosh', Arial, sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #00b894 100%);
+            min-height: 100vh;
+            color: #2d3436;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            color: #f8f9fa;
+            font-size: 1.2em;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 5px;
+        }
+
+        .score-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00b894;
+            display: block;
+        }
+
+        .score-label {
+            color: white;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .waste-item-area {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .current-waste {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .current-waste:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .current-waste.dragging {
+            transform: rotate(5deg) scale(0.9);
+            cursor: grabbing;
+        }
+
+        .waste-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .waste-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+
+        .waste-description {
+            color: #636e72;
+            font-size: 0.9em;
+        }
+
+        .dustbins-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .dustbin {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .dustbin.green {
+            border-color: #00b894;
+        }
+
+        .dustbin.blue {
+            border-color: #0984e3;
+        }
+
+        .dustbin.red {
+            border-color: #e17055;
+        }
+
+        .dustbin:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .dustbin.drag-over {
+            transform: scale(1.1);
+            border-width: 5px;
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .dustbin.correct {
+            animation: correctAnimation 0.6s ease-out;
+        }
+
+        .dustbin.wrong {
+            animation: wrongAnimation 0.6s ease-out;
+        }
+
+        @keyframes correctAnimation {
+            0% { background: rgba(0, 184, 148, 0.3); }
+            50% { transform: scale(1.2); background: rgba(0, 184, 148, 0.5); }
+            100% { background: rgba(255, 255, 255, 0.15); }
+        }
+
+        @keyframes wrongAnimation {
+            0% { background: rgba(225, 112, 85, 0.3); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+            100% { transform: translateX(0); background: rgba(255, 255, 255, 0.15); }
+        }
+
+        .dustbin-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .dustbin-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .dustbin-examples {
+            font-size: 0.8em;
+            color: #ddd;
+            line-height: 1.4;
+        }
+
+        .feedback {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback.success {
+            border-color: #00b894;
+            background: rgba(0, 184, 148, 0.2);
+        }
+
+        .feedback.error {
+            border-color: #e17055;
+            background: rgba(225, 112, 85, 0.2);
+        }
+
+        .feedback-text {
+            font-size: 1.1em;
+            color: white;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: #00b894;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #00b894, #74b9ff);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .game-over {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            color: #2d3436;
+        }
+
+        .final-score {
+            font-size: 3em;
+            color: #00b894;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .dustbins-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .score-board {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🌱 বর্জ্য ভাগ করে শান্তি</h1>
+            <p>সঠিকভাবে বর্জ্য ভাগ করে সমাজে শান্তি প্রতিষ্ঠায় সাহায্য করুন!</p>
+        </div>
+
+        <div class="score-board">
+            <div class="score-item">
+                <span class="score-number" id="correct-score">০</span>
+                <div class="score-label">সঠিক উত্তর</div>
+            </div>
+            <div class="score-item">
+                <span class="score-number" id="total-score">০</span>
+                <div class="score-label">মোট আইটেম</div>
+            </div>
+            <div class="score-item">
+                <span class="score-number" id="accuracy">০%</span>
+                <div class="score-label">নির্ভুলতা</div>
+            </div>
+            <div class="score-item">
+                <span class="score-number" id="level">১</span>
+                <div class="score-label">লেভেল</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="game-area">
+            <div class="waste-item-area">
+                <h3 style="color: white; margin-bottom: 20px;">বর্তমান আইটেম</h3>
+                <div class="current-waste" id="current-waste" draggable="true">
+                    <span class="waste-icon" id="waste-icon">🍌</span>
+                    <div class="waste-name" id="waste-name">কলার খোসা</div>
+                    <div class="waste-description" id="waste-description">রান্নাঘরের জৈবিক বর্জ্য</div>
+                </div>
+                
+                <div class="feedback" id="feedback">
+                    <div class="feedback-text">আইটেমটি সঠিক ডাস্টবিনে টেনে দিন!</div>
+                </div>
+            </div>
+
+            <div class="dustbins-area">
+                <div class="dustbin green" data-type="organic" id="green-bin">
+                    <div class="dustbin-icon">🟢</div>
+                    <div class="dustbin-title">জৈবিক</div>
+                    <div class="dustbin-examples">খাবারের ছিলকা, সবজির খোসা, বাগানের পাতা, টিস্যু</div>
+                </div>
+
+                <div class="dustbin blue" data-type="recyclable" id="blue-bin">
+                    <div class="dustbin-icon">🔵</div>
+                    <div class="dustbin-title">পুনর্ব্যবহারযোগ্য</div>
+                    <div class="dustbin-examples">প্লাস্টিকের বোতল, কাগজ, কার্ডবোর্ড, কাচ, ধাতু</div>
+                </div>
+
+                <div class="dustbin red" data-type="general" id="red-bin">
+                    <div class="dustbin-icon">🔴</div>
+                    <div class="dustbin-title">সাধারণ</div>
+                    <div class="dustbin-examples">পুনর্ব্যবহারযোগ্য নয়, ডায়াপার, ভাঙা জিনিস</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="nextItem()">পরবর্তী আইটেম</button>
+            <button class="btn btn-secondary" onclick="resetGame()">নতুন গেম</button>
+        </div>
+    </div>
+
+    <script>
+        const wasteItems = [
+            { icon: '🍌', name: 'কলার খোসা', description: 'রান্নাঘরের জৈবিক বর্জ্য', type: 'organic' },
+            { icon: '🍎', name: 'আপেলের শাঁস', description: 'ফলের বর্জ্য', type: 'organic' },
+            { icon: '🥤', name: 'প্লাস্টিক বোতল', description: 'পুনর্ব্যবহারযোগ্য প্লাস্টিক', type: 'recyclable' },
+            { icon: '📰', name: 'খবরের কাগজ', description: 'কাগজের বর্জ্য', type: 'recyclable' },
+            { icon: '🍝', name: 'বাসী খাবার', description: 'রান্না করা খাবারের বর্জ্য', type: 'organic' },
+            { icon: '📦', name: 'কার্ডবোর্ড বাক্স', description: 'কাগজের প্যাকেজিং', type: 'recyclable' },
+            { icon: '🍶', name: 'কাচের বোতল', description: 'পুনর্ব্যবহারযোগ্য কাচ', type: 'recyclable' },
+            { icon: '🧷', name: 'ভাঙা খেলনা', description: 'পুনর্ব্যবহারযোগ্য নয়', type: 'general' },
+            { icon: '🥬', name: 'সবজির খোসা', description: 'রান্নাঘরের সবজির বর্জ্য', type: 'organic' },
+            { icon: '📱', name: 'পুরাতন ফোন', description: 'ইলেকট্রনিক বর্জ্য', type: 'general' },
+            { icon: '🗞️', name: 'ম্যাগাজিন', description: 'চকচকে কাগজ', type: 'recyclable' },
+            { icon: '🍼', name: 'বাচ্চার ডায়াপার', description: 'স্বাস্থ্য সামগ্রী', type: 'general' },
+            { icon: '🥫', name: 'টিনের কৌটা', description: 'ধাতুর পাত্র', type: 'recyclable' },
+            { icon: '☕', name: 'কফির গুঁড়া', description: 'জৈবিক বর্জ্য', type: 'organic' },
+            { icon: '🧦', name: 'পুরাতন মোজা', description: 'কাপড়ের বর্জ্য', type: 'general' },
+            { icon: '🍃', name: 'ঝরা পাতা', description: 'বাগানের বর্জ্য', type: 'organic' },
+            { icon: '💊', name: 'ওষুধের বোতল', description: 'প্লাস্টিক বোতল', type: 'recyclable' },
+            { icon: '🧻', name: 'ব্যবহৃত টিস্যু', description: 'দূষিত কাগজ', type: 'general' },
+            { icon: '🥚', name: 'ডিমের খোসা', description: 'রান্নাঘরের জৈবিক বর্জ্য', type: 'organic' },
+            { icon: '📄', name: 'অফিসের কাগজ', description: 'পরিষ্কার সাদা কাগজ', type: 'recyclable' }
+        ];
+
+        const binNames = {
+            organic: 'জৈবিক',
+            recyclable: 'পুনর্ব্যবহারযোগ্য', 
+            general: 'সাধারণ'
+        };
+
+        const numbersToBengali = {
+            '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+            '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+        };
+
+        function convertToBengaliNumber(num) {
+            return num.toString().replace(/[0-9]/g, (digit) => numbersToBengali[digit]);
+        }
+
+        let gameStats = {
+            correctSorts: 0,
+            totalItems: 0,
+            currentLevel: 1,
+            currentItemIndex: 0,
+            gameActive: true
+        };
+
+        let currentWasteItem = null;
+        let draggedElement = null;
+
+        function initializeGame() {
+            shuffleArray(wasteItems);
+            loadNextItem();
+            updateDisplay();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function loadNextItem() {
+            if (gameStats.currentItemIndex >= wasteItems.length) {
+                shuffleArray(wasteItems);
+                gameStats.currentItemIndex = 0;
+                gameStats.currentLevel++;
+            }
+
+            currentWasteItem = wasteItems[gameStats.currentItemIndex];
+            
+            document.getElementById('waste-icon').textContent = currentWasteItem.icon;
+            document.getElementById('waste-name').textContent = currentWasteItem.name;
+            document.getElementById('waste-description').textContent = currentWasteItem.description;
+            
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('feedback').querySelector('.feedback-text').textContent = 'আইটেমটি সঠিক ডাস্টবিনে টেনে দিন!';
+        }
+
+        function checkAnswer(selectedBin) {
+            const isCorrect = selectedBin === currentWasteItem.type;
+            gameStats.totalItems++;
+
+            if (isCorrect) {
+                gameStats.correctSorts++;
+                showFeedback(true, `সঠিক! ${currentWasteItem.name} ${binNames[selectedBin]} বিনে যাবে।`);
+                document.getElementById(getBinId(selectedBin)).classList.add('correct');
+                
+                // Auto-advance to next item after 1.5 seconds for correct answers
+                setTimeout(() => {
+                    document.querySelectorAll('.dustbin').forEach(bin => {
+                        bin.classList.remove('correct', 'wrong');
+                    });
+                    nextItem();
+                }, 1500);
+            } else {
+                showFeedback(false, `ভুল! ${currentWasteItem.name} ${binNames[currentWasteItem.type]} বিনে যাবে।`);
+                document.getElementById(getBinId(selectedBin)).classList.add('wrong');
+                
+                // For wrong answers, just clear the animation after 600ms
+                setTimeout(() => {
+                    document.querySelectorAll('.dustbin').forEach(bin => {
+                        bin.classList.remove('correct', 'wrong');
+                    });
+                }, 600);
+            }
+
+            updateDisplay();
+        }
+
+        function getBinId(type) {
+            switch(type) {
+                case 'organic': return 'green-bin';
+                case 'recyclable': return 'blue-bin';
+                case 'general': return 'red-bin';
+                default: return '';
+            }
+        }
+
+        function showFeedback(isCorrect, message) {
+            const feedback = document.getElementById('feedback');
+            const feedbackText = feedback.querySelector('.feedback-text');
+            
+            feedback.className = isCorrect ? 'feedback success' : 'feedback error';
+            feedbackText.textContent = message;
+        }
+
+        function updateDisplay() {
+            document.getElementById('correct-score').textContent = convertToBengaliNumber(gameStats.correctSorts);
+            document.getElementById('total-score').textContent = convertToBengaliNumber(gameStats.totalItems);
+            document.getElementById('level').textContent = convertToBengaliNumber(gameStats.currentLevel);
+            
+            const accuracy = gameStats.totalItems > 0 ? 
+                Math.round((gameStats.correctSorts / gameStats.totalItems) * 100) : 0;
+            document.getElementById('accuracy').textContent = convertToBengaliNumber(accuracy) + '%';
+            
+            const progress = (gameStats.currentItemIndex / wasteItems.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+        }
+
+        function nextItem() {
+            gameStats.currentItemIndex++;
+            loadNextItem();
+        }
+
+        function resetGame() {
+            gameStats = {
+                correctSorts: 0,
+                totalItems: 0,
+                currentLevel: 1,
+                currentItemIndex: 0,
+                gameActive: true
+            };
+            initializeGame();
+        }
+
+        // Drag and Drop functionality
+        document.getElementById('current-waste').addEventListener('dragstart', function(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+        });
+
+        document.getElementById('current-waste').addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+        });
+
+        document.querySelectorAll('.dustbin').forEach(bin => {
+            bin.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+
+            bin.addEventListener('dragleave', function(e) {
+                this.classList.remove('drag-over');
+            });
+
+            bin.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                
+                if (draggedElement) {
+                    const binType = this.getAttribute('data-type');
+                    checkAnswer(binType);
+                }
+            });
+
+            // Click functionality for mobile/touch devices
+            bin.addEventListener('click', function() {
+                const binType = this.getAttribute('data-type');
+                checkAnswer(binType);
+            });
+        });
+
+        // Initialize the game when page loads
+        window.addEventListener('load', initializeGame);
+    </script>
+</body>
+</html>
